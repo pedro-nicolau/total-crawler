@@ -1,4 +1,5 @@
 from urllib.request import urlopen
+from urllib.parse import urlparse
 from link_finder import LinkFinder
 from core import Core
 
@@ -6,6 +7,7 @@ from core import Core
 # It initializes the project, manages the queue and crawled URLs, and handles the crawling logic
 class Crawler:
     # Class variables to store project details and state
+    ### These variables are shared across all instances of the Crawler class
     base_url = ''
     core = None
     crawled_file = ''
@@ -25,6 +27,7 @@ class Crawler:
         Crawler.queue_file = f'{project_name}/queue.txt'
         Crawler.crawled_file = f'{Crawler.project_name}/crawled.txt'
         self.boot()
+        self.crawl_page('1st', base_url)
 
     # Initialize the crawler by creating project directories and files
     # This method is called when the crawler is instantiated
@@ -35,53 +38,68 @@ class Crawler:
         Crawler.crawled = self.core.file_to_set(self.crawled_file)
 
     # This method is called to start the crawling process
-    def crawl_page(self, thread_name, page_url):
+    @staticmethod
+    def crawl_page(thread_name, page_url):
         if page_url not in Crawler.crawled:
             print(thread_name + ' now crawling ' + page_url)
             print('Queue ' + str(len(Crawler.queue)) + ' | Crawled ' + str(len(Crawler.crawled)))
-            self.add_links_to_queue(Crawler.gather_links(page_url))
+            dummy_links = Crawler.gather_links(page_url)
+            print(f'Found {len(dummy_links)} links on {page_url}')
+            Crawler.add_links_to_queue(dummy_links)
             Crawler.queue.remove(page_url)
             Crawler.crawled.add(page_url)
-            self.update_files()
+            Crawler.update_files()
 
     # This method gathers links from a given page URL
     # It uses the LinkFinder class to parse the HTML and extract links
-    def gather_links(self, page_url):
+    @staticmethod
+    def gather_links(page_url):
         html_string = ''
         try:
             response = urlopen(page_url)
             if 'text/html' in response.getheader('Content-Type'):
                 html_bytes = response.read()
                 html_string = html_bytes.decode('utf-8')
-            finder = LinkFinder(self.base_url, page_url)
+            finder = LinkFinder(Crawler.base_url, page_url)
             finder.feed(html_string)
             return finder.page_links()
         except Exception as e:
             print(f'Error: {e}')
             return set()
 
-    # This method adds links to the queue if they are not already present
-    # It checks against both the queue and crawled sets to avoid duplicates
-    def add_links_to_queue(self, links):
-        for link in links:
-            if link not in self.queue and link not in self.crawled:
-                Crawler.queue.add(link)
-                Crawler.core.append_to_file(self.queue_file, link)
+    # # This method adds links to the queue if they are not already present
+    # def add_links_to_queue(self, links):
+    #     for link in links:
+    #         if link not in self.queue and link not in self.crawled:
+    #             Crawler.queue.add(link)
+    #             Crawler.core.append_to_file(self.queue_file, link)
 
     # This method adds links to the queue, ensuring they are valid and not duplicates
-    def add_links_to_queue(self, links):
+    # It checks against both the queue and crawled sets to avoid duplicates
+    @staticmethod
+    def add_links_to_queue(links):
         for url in links:
             if url in Crawler.queue:
                 continue
             if url in Crawler.crawled:
                 continue
-            if Crawler.domain_name not in url:
+            # Parse the netloc of the URL and compare with the domain name
+            try:
+                netloc = urlparse(url).netloc
+                # Remove 'www.' prefix for comparison
+                netloc = netloc.replace('www.', '')
+                domain = Crawler.domain_name.replace('www.', '')
+                if not netloc.endswith(domain):
+                    continue
+            except Exception:
                 continue
             Crawler.queue.add(url)
+            Crawler.core.append_to_file(Crawler.queue_file, url)
     
     # This method updates the queue and crawled files with the current state of the sets
     # It writes the contents of the queue and crawled sets to their respective files
-    def update_files(self):
+    @staticmethod
+    def update_files():
         Crawler.core.set_to_file(Crawler.queue, Crawler.queue_file)
         Crawler.core.set_to_file(Crawler.crawled, Crawler.crawled_file)
         print('Files updated: Queue and Crawled')
