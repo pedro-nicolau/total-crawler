@@ -1,8 +1,6 @@
-import threading
 from queue import Queue
 from crawler import Crawler
 from domain import *
-from core import Core
 
 PROJECT_NAME = 'guichelive'
 HOMEPAGE = 'https://www.guichelive.com.br/'

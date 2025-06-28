@@ -1,7 +1,7 @@
-from urllib.request import urlopen
-from urllib.parse import urlparse
-from link_finder import LinkFinder
+import asyncio
 from core import Core
+from link_finder import LinkFinder
+from urllib.parse import urlparse
 
 # Crawler class to manage the crawling process
 # It initializes the project, manages the queue and crawled URLs, and handles the crawling logic
@@ -43,7 +43,7 @@ class Crawler:
         if page_url not in Crawler.crawled:
             print(thread_name + ' now crawling ' + page_url)
             print('Queue ' + str(len(Crawler.queue)) + ' | Crawled ' + str(len(Crawler.crawled)))
-            dummy_links = Crawler.gather_links(page_url)
+            dummy_links = asyncio.run(Crawler.gather_links(page_url))
             print(f'Found {len(dummy_links)} links on {page_url}')
             Crawler.add_links_to_queue(dummy_links)
             Crawler.queue.remove(page_url)
@@ -53,26 +53,14 @@ class Crawler:
     # This method gathers links from a given page URL
     # It uses the LinkFinder class to parse the HTML and extract links
     @staticmethod
-    def gather_links(page_url):
-        html_string = ''
+    async def gather_links(page_url):
         try:
-            response = urlopen(page_url)
-            if 'text/html' in response.getheader('Content-Type'):
-                html_bytes = response.read()
-                html_string = html_bytes.decode('utf-8')
             finder = LinkFinder(Crawler.base_url, page_url)
-            finder.feed(html_string)
+            await finder.find_events_guichelive()
             return finder.page_links()
         except Exception as e:
-            print(f'Error: {e}')
+            print(f'Error (gather_links): {e}')
             return set()
-
-    # # This method adds links to the queue if they are not already present
-    # def add_links_to_queue(self, links):
-    #     for link in links:
-    #         if link not in self.queue and link not in self.crawled:
-    #             Crawler.queue.add(link)
-    #             Crawler.core.append_to_file(self.queue_file, link)
 
     # This method adds links to the queue, ensuring they are valid and not duplicates
     # It checks against both the queue and crawled sets to avoid duplicates
