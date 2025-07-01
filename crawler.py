@@ -68,7 +68,8 @@ class Crawler:
             Crawler.queue.add(url)
             Crawler.core.append_to_file(Crawler.queue_file, url)
 
-    # This method is called to start the crawling process
+    # This method is called to start the crawling process 
+    # It processes the queue, gathers event links from first page, and store links in the queue
     @staticmethod
     def crawl_first_page(thread_name: str, page_url: str) -> None:
         if page_url not in Crawler.crawled:
@@ -86,6 +87,9 @@ class Crawler:
             Crawler.crawled.add(page_url)
             Crawler.update_files()
 
+    # This method is called to crawl a specific page URL
+    # It retrieves the event information from the page and updates the crawled and queue sets also the events dictionary
+    # It uses the EventFinder class to parse the HTML and extract event details
     @staticmethod
     def crawl_page(thread_name: str, page_url: str) -> None:
         if page_url not in Crawler.crawled:
@@ -118,12 +122,12 @@ class Crawler:
     # It uses the EventFinder class to parse the HTML and extract event details
     @staticmethod
     async def get_event(job_type: JobTypes, page_url: str) -> dict:
-        # try:
-        finder = EventFinder(Crawler.base_url, page_url)
-        return await finder.get_event_info(job_type, page_url)
-        # except Exception as e:
-        #     print(f"Error (get_event): {e}")
-        #     return dict()
+        try:
+            finder = EventFinder(Crawler.base_url, page_url)
+            return await finder.get_event_info(job_type, page_url)
+        except Exception as e:
+            print(f"Error (get_event): {e}")
+            return dict()
 
     # This method updates the queue and crawled files with the current state of the sets
     # It writes the contents of the queue and crawled sets to their respective files
