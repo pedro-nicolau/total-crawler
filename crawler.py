@@ -1,6 +1,6 @@
 import asyncio
 from core import *
-from link_finder import EventFinder
+from event_finder import EventFinder
 from urllib.parse import urlparse
 
 
@@ -96,7 +96,7 @@ class Crawler:
                 + " | Crawled "
                 + str(len(Crawler.crawled))
             )
-            event = asyncio.run(Crawler.get_event_info(JobTypes.GUICHELIVE, page_url))
+            event = asyncio.run(Crawler.get_event(JobTypes.GUICHELIVE, page_url))
             Crawler.add_event_to_events(event)
             Crawler.queue.remove(page_url)
             Crawler.crawled.add(page_url)
@@ -113,6 +113,17 @@ class Crawler:
         except Exception as e:
             print(f"Error (gather_links): {e}")
             return set()
+
+    # This method retrieves event information from a given page URL
+    # It uses the EventFinder class to parse the HTML and extract event details
+    @staticmethod
+    async def get_event(job_type: JobTypes, page_url: str) -> dict:
+        # try:
+        finder = EventFinder(Crawler.base_url, page_url)
+        return await finder.get_event_info(job_type, page_url)
+        # except Exception as e:
+        #     print(f"Error (get_event): {e}")
+        #     return dict()
 
     # This method updates the queue and crawled files with the current state of the sets
     # It writes the contents of the queue and crawled sets to their respective files
