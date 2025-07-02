@@ -44,7 +44,7 @@ class Crawler:
     def add_event_to_events(event: dict) -> None:
         if event:
             for k in event:
-                Crawler.events[k] = event
+                Crawler.events[k] = event[k]
 
     # This method adds links to the queue, ensuring they are valid and not duplicates
     # It checks against both the queue and crawled sets to avoid duplicates
