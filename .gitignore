@@ -194,4 +194,4 @@ cython_debug/
 .cursorindexingignore
 
 # other folders
-guichelive/
+POC-guichelive/
