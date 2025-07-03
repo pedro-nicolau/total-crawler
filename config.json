@@ -1,0 +1,9 @@
+{
+    "$global": {
+        "PROJECT_NAME": "POC-guichelive",
+        "HOMEPAGE_LIST": ["https://www.guichelive.com.br/"],
+        "QUEUE_FILE_DEFAULT": "POC-guichelive/queue.txt",
+        "CRAWLED_FILE_DEFAULT": "POC-guichelive/crawled.txt",
+        "NUMBER_OF_THREADS": 1
+    }
+}

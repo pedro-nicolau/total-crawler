@@ -1,14 +1,8 @@
 import threading
-from domain import *
 from queue import Queue
 from crawler import Crawler
+from core import PROJECT_NAME, HOMEPAGE, DOMAIN_NAME, NUMBER_OF_THREADS
 
-PROJECT_NAME = "POC-guichelive"
-HOMEPAGE = "https://www.guichelive.com.br/"
-DOMAIN_NAME = get_domain_name(HOMEPAGE)
-QUEUE_FILE = PROJECT_NAME + "/queue.txt"
-CRAWLED_FILE = PROJECT_NAME + "/crawled.txt"
-NUMBER_OF_THREADS = 1 # Number of threads to use for crawling
 queue = Queue()
 ant = Crawler(PROJECT_NAME, HOMEPAGE, DOMAIN_NAME)
 
