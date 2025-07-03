@@ -3,8 +3,43 @@ import os
 import re
 import time
 from enum import Enum
+from domain import *
 
+NUMBER_OF_THREADS = 1 # Number of threads to use for crawling. ### Careful with this value, it can cause issues if set too high.
 
+PROJECT_NAME = "" # Can be dinamically set based on the website being crawled
+HOMEPAGE = ""
+DOMAIN_NAME = ""
+QUEUE_FILE = ""
+CRAWLED_FILE = ""
+
+try:
+    with open("config.json", "r") as config_file:
+        config = json.load(config_file)
+        PROJECT_NAME = config["$global"]["PROJECT_NAME"] if "PROJECT_NAME" in config["$global"] else "POC-guichelive"
+        HOMEPAGE_LIST = config["$global"]["HOMEPAGE_LIST"] if "HOMEPAGE_LIST" in config["$global"] else ['https://www.guichelive.com.br/']
+        HOMEPAGE = HOMEPAGE_LIST[0] if HOMEPAGE_LIST else ""
+        DOMAIN_NAME = get_domain_name(HOMEPAGE)
+        QUEUE_FILE = PROJECT_NAME + "/queue.txt"
+        CRAWLED_FILE = PROJECT_NAME + "/crawled.txt"
+except FileNotFoundError as e:
+    print("Configuration file not found. Using default values.")
+    PROJECT_NAME = "POC-guichelive"
+    # The homepage of the website to be crawled is currently set to GuicheLive
+    HOMEPAGE = "https://www.guichelive.com.br/"
+    DOMAIN_NAME = get_domain_name(HOMEPAGE)
+    QUEUE_FILE = PROJECT_NAME + "/queue.txt"
+    CRAWLED_FILE = PROJECT_NAME + "/crawled.txt"
+except json.JSONDecodeError:
+    print("Error decoding JSON from configuration file. Using default values.")
+    PROJECT_NAME = "POC-guichelive"
+    HOMEPAGE = "https://www.guichelive.com.br/"
+    DOMAIN_NAME = get_domain_name(HOMEPAGE)
+    QUEUE_FILE = PROJECT_NAME + "/queue.txt"
+    CRAWLED_FILE = PROJECT_NAME + "/crawled.txt"
+
+# Enum for job types
+# This enum defines the types of jobs that can be processed by the crawler
 class JobTypes(Enum):
     GUICHELIVE = "guichelive"
     GUICHEWEB = "guicheweb"

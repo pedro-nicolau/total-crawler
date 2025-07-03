@@ -1,5 +1,5 @@
 from playwright.async_api import Playwright, async_playwright
-from urllib import parse
+from urllib.parse import urljoin
 from core import *
 
 
@@ -34,7 +34,7 @@ class EventFinder:
             for a in anchors:
                 value = await a.get_attribute("href")
                 print(f"Found link: {value}")
-                url = parse.urljoin(self.base_url, value)
+                url = urljoin(self.base_url, value)
                 self.links.add(url)
             await browser.close()
         except Exception as e:
